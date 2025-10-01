@@ -1,19 +1,30 @@
 #!/bin/bash
 
 export RESOURCE_GROUP="rg-sprint3"
-export LOCATION="westus2"
+export LOCATION="westus"
 
 export APP_NAME="sprint3-java-app"
 export APP_RUNTIME="JAVA|17-java17"
 export APP_INSIGHTS="ai-sprint3"
 
-export GITHUB_REPO="omininola/sprint3_java"
+export GITHUB_REPO="omininola/sprint3_java_deploy"
 export BRANCH="main"
 
 export DB_SERVER_NAME="sprint3-cloud-rm554513"
 export DB_NAME="sprint3"
 export DB_USER="omininola"
 export DB_PASS="SenhaForte123!"
+
+# SPRING_DATASOURCE_URL = jdbc:sqlserver://sprint3-cloud-rm554513.database.windows.net:1433;database=sprint3;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
+# SPRING_DATASOURCE_USERNAME = omininola@sprint3-cloud-rm554513
+# SPRING_DATASOURCE_PASSWORD = SenhaForte123!
+
+# Registra os Providers
+az provider register --namespace Microsoft.Web
+az provider register --namespace Microsoft.Insights
+az provider register --namespace Microsoft.OperationalInsights
+az provider register --namespace Microsoft.ServiceLinker
+az provider register --namespace Microsoft.Sql
 
 # Criar o Resource Group
 az group create --name $RESOURCE_GROUP --location $LOCATION
@@ -30,7 +41,7 @@ az appservice plan create \
   --name $APP_NAME-plan \
   --resource-group $RESOURCE_GROUP \
   --location $LOCATION \
-  --sku F1 \
+  --sku B1 \
   --is-linux
 
 # Criar o Serviço de APlicativo
