@@ -23,7 +23,7 @@ Garantir a organização geral das filiais e ter um controle e uma visão clara 
 
 ```mermaid
 flowchart TD
-    User[Usuário / Navegador] -->|HTTPS Request| AppService[Azure App Service<br/>(Spring Boot MVC + API)]
+    User[Usuário / Navegador] -->|HTTPS Request| AppService[Azure App Service(Spring Boot MVC + API)]
 
     AppService -->|JDBC| Database[Azure SQL Database]
 
