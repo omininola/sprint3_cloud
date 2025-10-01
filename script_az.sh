@@ -3,11 +3,11 @@ az login
 RESOURCE_GROUP=rg_sprint3
 LOCATION=eastus2
 APP_NAME=sprint3-java-app
-GITHUB_REPO=omininola/sprint3_java
+GITHUB_REPO=gituser/sprint3_java
 BRANCH=main
-DB_SERVER_NAME=sprint3-java
+DB_SERVER_NAME=sprint3-java-rm557884
 DB_NAME=sprint3
-DB_USER=omininola
+DB_USER=lucas
 DB_PASS=SenhaForte123!
 
 az group create --name $RESOURCE_GROUP --location $LOCATION
@@ -26,16 +26,9 @@ az sql server create \
 az sql db create \
   --resource-group $RESOURCE_GROUP \
   --server $DB_SERVER_NAME \
-  --name $DB_NAME
+  --name $DB_NAME \
   --backup-storage-redundancy Local \
   --zone-redundant false
-
-az mysql server firewall-rule create \
-  --resource-group $RESOURCE_GROUP \
-  --server-name $DB_SERVER_NAME \
-  --name AllowAzureIP \
-  --start-ip-address 0.0.0.0 \
-  --end-ip-address 0.0.0.0
 
 az appservice plan create \
   --name $APP_NAME-plan \

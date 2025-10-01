@@ -20,28 +20,4 @@ Garantir a organização geral das filiais e ter um controle e uma visão clara 
 
 
 ## Arquitetura 
-
-```mermaid
-flowchart TD
-    User[Usuário / Navegador] -->|HTTPS Request| AppService[Azure App Service - Spring Boot MVC + API]
-
-    AppService -->|JDBC| Database[Azure SQL Database]
-
-    subgraph Azure["Azure Cloud"]
-        AppService
-        Database
-        Monitor[Azure Monitor / Application Insights]
-        KeyVault[Azure Key Vault]
-    end
-
-    AppService --> Monitor
-    AppService --> KeyVault
-
-    subgraph DevOps["CI/CD Pipeline"]
-        Repo[GitHub / Azure DevOps Repo]
-        Pipeline[Build & Deploy Pipeline]
-    end
-
-    Repo --> Pipeline --> AppService
-
-```
+![Application Archtecture](docs/archtecture.png)
