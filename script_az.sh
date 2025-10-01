@@ -1,47 +1,46 @@
-az login
+#!/bin/bash
 
-RESOURCE_GROUP=rg_sprint3
-LOCATION=eastus2
-APP_NAME=sprint3-java-app
-GITHUB_REPO=gituser/sprint3_java
-BRANCH=main
-DB_SERVER_NAME=sprint3-java-rm557884
-DB_NAME=sprint3
-DB_USER=lucas
-DB_PASS=SenhaForte123!
+export RESOURCE_GROUP="rg-sprint3"
+export LOCATION="westus2"
 
+export APP_NAME="sprint3-java-app"
+export APP_RUNTIME="JAVA|17-java17"
+export APP_INSIGHTS="ai-sprint3"
+
+export GITHUB_REPO="omininola/sprint3_java"
+export BRANCH="main"
+
+export DB_SERVER_NAME="sprint3-cloud-rm554513"
+export DB_NAME="sprint3"
+export DB_USER="omininola"
+export DB_PASS="SenhaForte123!"
+
+# Criar o Resource Group
 az group create --name $RESOURCE_GROUP --location $LOCATION
 
-az provider register --namespace Microsoft.Sql
-az provider register --namespace Microsoft.Web
-
-az sql server create \
-  --resource-group $RESOURCE_GROUP \
-  --name $DB_SERVER_NAME \
+# Criar o Application Insights
+az monitor app-insights component create \
+  --app $APP_INSIGHTS \
   --location $LOCATION \
-  --admin-user $DB_USER \
-  --admin-password $DB_PASS \
-  --enable-public-network true
-
-az sql db create \
   --resource-group $RESOURCE_GROUP \
-  --server $DB_SERVER_NAME \
-  --name $DB_NAME \
-  --backup-storage-redundancy Local \
-  --zone-redundant false
+  --application-type web
 
+# Criar o Plano de Serviço
 az appservice plan create \
   --name $APP_NAME-plan \
   --resource-group $RESOURCE_GROUP \
+  --location $LOCATION \
   --sku F1 \
   --is-linux
 
+# Criar o Serviço de APlicativo
 az webapp create \
   --resource-group $RESOURCE_GROUP \
   --plan $APP_NAME-plan \
   --name $APP_NAME \
-  --runtime "JAVA|17-java17"
+  --runtime $APP_RUNTIME
 
+# Habilita a autenticação básica (SCM)
 az resource update \
   --resource-group $RESOURCE_GROUP \
   --namespace Microsoft.Web \
@@ -50,25 +49,38 @@ az resource update \
   --parent sites/$APP_NAME \
   --set properties.allow=true
 
-az sql server firewall-rule create \
+# Recuperar a String de Conexão do Application Insights
+CONNECTION_STRING=$(az monitor app-insights component show \
+  --app $APP_INSIGHTS \
   --resource-group $RESOURCE_GROUP \
-  --server $DB_SERVER_NAME \
-  --name AllowAzureServices \
-  --start-ip-address 0.0.0.0 \
-  --end-ip-address 0.0.0.0
+  --query connectionString \
+  --output tsv)
 
+# Configurar as Variáveis de Ambiente
 az webapp config appsettings set \
   --resource-group $RESOURCE_GROUP \
   --name $APP_NAME \
   --settings \
+    APPLICATIONINSIGHTS_CONNECTION_STRING="$CONNECTION_STRING" \
+    ApplicationInsightsAgent_EXTENSION_VERSION="~3" \
+    XDT_MicrosoftApplicationInsights_Mode="Recommended" \
+    XDT_MicrosoftApplicationInsights_PreemptSdk="1" \
     SPRING_DATASOURCE_USERNAME="$DB_USER@$DB_SERVER_NAME" \
     SPRING_DATASOURCE_PASSWORD="$DB_PASS" \
     SPRING_DATASOURCE_URL="jdbc:sqlserver://$DB_SERVER_NAME.database.windows.net:1433;database=$DB_NAME;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
 
+# Reiniciar o App
 az webapp restart \
   --name $APP_NAME \
   --resource-group $RESOURCE_GROUP
 
+# Criar a conexão App com o Application Insights
+az monitor app-insights component connect-webapp \
+  --app $APP_INSIGHTS \
+  --web-app $APP_NAME \
+  --resource-group $RESOURCE_GROUP
+
+# Configurar Github Actions
 az webapp deployment github-actions add \
   --name $APP_NAME \
   --resource-group $RESOURCE_GROUP \
@@ -76,5 +88,28 @@ az webapp deployment github-actions add \
   --branch $BRANCH \
   --login-with-github
 
-az webapp show --resource-group $RESOURCE_GROUP --name $APP_NAME
-az sql server show --resource-group $RESOURCE_GROUP --name $DB_SERVER_NAME
+# Criar SQL Server 
+az sql server create \
+  --resource-group $RESOURCE_GROUP \
+  --name $DB_SERVER_NAME \
+  --location $LOCATION \
+  --admin-user $DB_USER \
+  --admin-password $DB_PASS \
+  --enable-public-network true
+
+# Criar o banco
+az sql db create \
+  --resource-group $RESOURCE_GROUP \
+  --server $DB_SERVER_NAME \
+  --name $DB_NAME \
+  --service-objective Basic \
+  --backup-storage-redundancy Local \
+  --zone-redundant false
+
+# Liberar os IPS de acesso ao banco
+az sql server firewall-rule create \
+  --resource-group $RESOURCE_GROUP \
+  --server $DB_SERVER_NAME \
+  --name AllowAll \
+  --start-ip-address 0.0.0.0 \
+  --end-ip-address 255.255.255.255
