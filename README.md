@@ -9,7 +9,7 @@
 | João Pedro Amorim Brito | 559213 |
 
 ## Links
-Youtube: [https://youtu.be/mk68QvOxX-Y](https://youtu.be/mk68QvOxX-Y)
+Youtube: [https://youtu.be/Rn9w3ttxhJg](https://youtu.be/Rn9w3ttxhJg)
 
 ## Descrição
 A aplicação é uma API juntamente com um projeto MVC ambos desenvolvidos com o auxílio do Spring Boot, o projeto possui 3 fluxos principais, o primeiro é o de login/cadastro onde é possível entrar ou criar uma conta, garantindo assim o acesso aos demais fluxos. Outro fluxo interessante é o de criar uma nova filial, onde você insere o nome e o endereço. Com uma nova filial em mãos, você pode adicionar motos a essa filial. Garantindo assim uma organização melhor para cada filial da Mottu.
@@ -81,7 +81,8 @@ Agora que já temos o repositório de deploy preparado, podemos começar com os 
 export RESOURCE_GROUP="rg-sprint3"
 export LOCATION="westus"
 
-export APP_NAME="sprint3-java-app"
+# Mude para o seu rm
+export APP_NAME="sprint3-java-app-<SEU_RM>"
 export APP_RUNTIME="JAVA|17-java17"
 export APP_INSIGHTS="ai-sprint3"
 
@@ -101,6 +102,9 @@ Com essas alterações feitas, podemos enfim rodar o script
 ```bash
 # Entre no diretório do script (Caso ainda não esteja)
 cd sprint3_cloud
+
+# Faça login na Azure
+az login
 
 # Rode o script
 ./script_az.sh
@@ -184,3 +188,10 @@ git push origin main
 ```
 
 ## Testes
+
+- Abra no navegador o serviço da aplicação
+- Realize o cadastro de um novo usuário
+- Realize o login com o cadastro recem criado
+- Explore o site criando
+  - 1 Filial
+  - 1 Moto
